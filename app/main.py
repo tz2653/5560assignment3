@@ -1,10 +1,15 @@
+# English comments
 from fastapi import FastAPI
-from app.routers import embeddings
+from .nlp import EmbeddingRequest, embed_text
 
-app = FastAPI(title="FastAPI Word Embeddings API")
+app = FastAPI(title="FastAPI Embeddings API", version="0.1.0")
 
-app.include_router(embeddings.router)
+@app.get("/health")
+def health():
+    return {"status": "ok"}
 
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to the Word Embeddings API!"}
+@app.post("/embed")
+def create_embedding(req: EmbeddingRequest):
+    vec = embed_text(req.text)
+    return {"embedding": vec, "dim": len(vec)}
+
