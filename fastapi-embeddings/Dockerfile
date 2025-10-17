@@ -1,19 +1,20 @@
-# Use the official lightweight Python image
 FROM python:3.11-slim
 
-# Set the working directory inside the container
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+ && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
-# Copy dependency file into the container
-COPY requirements.txt .
+COPY pyproject.toml ./
+RUN python -m pip install --upgrade pip \
+ && pip install -e .
 
-# Install dependencies and download the spaCy model
-RUN pip install --upgrade pip setuptools wheel \
- && pip install -r requirements.txt \
- && python -m spacy download en_core_web_md
+COPY app ./app
 
-# Copy the entire project into the container
-COPY . .
-
-# Run FastAPI with Uvicorn on port 8000
+EXPOSE 8000
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
